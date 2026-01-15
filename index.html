@@ -9,6 +9,9 @@
 </head>
 
 <body>
+  <!-- Audio element (local MP3) -->
+  <audio id="vibesAudio" src="./vibes.mp3" preload="auto" loop></audio>
+
   <!-- Overlay audio gate -->
   <div class="overlay" id="audioOverlay" role="dialog" aria-modal="true" aria-label="Audio prompt">
     <div class="overlay-card">
@@ -25,7 +28,7 @@
       </div>
 
       <div class="tiny">
-        *Browser biasanya mencegah autoplay, jadi perlu klik tombol dulu ya.
+        *Autoplay dengan suara tanpa klik biasanya diblokir browser, jadi perlu klik “Mulai”.
       </div>
     </div>
   </div>
@@ -94,7 +97,7 @@
         </div>
 
         <div class="hero-right">
-          <!-- Inline SVG "menggiurkan" -->
+          <!-- Inline SVG -->
           <div class="ice-illustration" aria-hidden="true">
             <svg viewBox="0 0 260 320" width="260" height="320">
               <defs>
@@ -103,29 +106,22 @@
                 </filter>
               </defs>
 
-              <!-- plate / background blob -->
               <path d="M50 250 C40 190, 70 130, 130 140 C200 150, 240 200, 220 260 C200 320, 90 320, 50 250 Z"
                     fill="#FFE9D6" />
 
-              <!-- cone -->
               <path d="M120 140 L70 290 Q130 315 190 290 L140 140 Z"
                     fill="#E7B48E" filter="url(#s)"/>
               <path d="M96 210 L164 210" stroke="#D39B75" stroke-width="5" opacity=".6"/>
               <path d="M88 238 L172 238" stroke="#D39B75" stroke-width="5" opacity=".6"/>
               <path d="M80 266 L180 266" stroke="#D39B75" stroke-width="5" opacity=".6"/>
 
-              <!-- scoop 1 -->
               <circle cx="130" cy="115" r="62" fill="#FFF2D9" filter="url(#s)"/>
-              <!-- scoop 2 -->
               <circle cx="165" cy="85" r="48" fill="#FFD8E1" filter="url(#s)"/>
-              <!-- scoop 3 -->
               <circle cx="105" cy="78" r="46" fill="#E6FFF1" filter="url(#s)"/>
 
-              <!-- drizzle -->
               <path d="M78 120 C100 135, 125 125, 155 140 C175 150, 190 140, 205 155"
                     fill="none" stroke="#F59E0B" stroke-width="10" stroke-linecap="round" opacity=".9"/>
 
-              <!-- cherry -->
               <circle cx="175" cy="35" r="14" fill="#FF3B30" filter="url(#s)"/>
               <path d="M175 35 C170 20, 160 15, 150 10" stroke="#1F2937" stroke-width="4" fill="none" stroke-linecap="round"/>
               <path d="M150 10 C156 8, 162 10, 165 16" fill="#22C55E" opacity=".9"/>
@@ -147,10 +143,7 @@
           <h3>Menu rasa favorit</h3>
           <p>Pilih yang paling kamu suka. Semua bisa cone atau mangkok.</p>
         </div>
-
-        <div class="flavors" id="flavorCards">
-          <!-- filled by JS -->
-        </div>
+        <div class="flavors" id="flavorCards"></div>
       </section>
 
       <section class="card section">
@@ -231,7 +224,7 @@
             <div>
               <div class="label">Pembayaran</div>
               <div class="mutedBox" style="height:44px; display:flex; align-items:center;">
-                <b>Cash</b>&nbsp;<span class="small">(bayar saat ambil)</span>
+                <b>Cash</b>&nbsp;<span class="tiny">(bayar saat ambil)</span>
               </div>
             </div>
           </div>
@@ -400,17 +393,11 @@
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="tiny">
         © <span id="year"></span> Toko Eskrim Alief • Cash • Ambil pesanan: <b>datang ke Alief</b>
       </div>
     </footer>
-  </div>
-
-  <!-- YouTube Player (hidden) -->
-  <div class="ytHidden" aria-hidden="true">
-    <div id="ytPlayer"></div>
   </div>
 
   <script src="./app.js"></script>
