@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toko Eskrim Vanilla</title>
+  <meta name="description" content="Toko eskrim vanilla: cone/mangkok, ukuran small/medium/large, cash. Dapat order ID & dashboard owner (tanpa database)." />
+
+  <style>
+    :root{
+      --bg: #fff7ed;
+      --card: rgba(255,255,255,.86);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: rgba(31,41,55,.12);
+      --primary: #f97316;
+      --primary2: #fb7185;
+      --ok: #22c55e;
+      --shadow: 0 12px 30px rgba(31,41,55,.08);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(1200px 600px at 20% 0%, #ffe4e6 0%, transparent 60%),
+        radial-gradient(900px 500px at 100% 10%, #ffedd5 0%, transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    a{ color: inherit; text-decoration:none; }
+    button, input, select{ font: inherit; }
+    .container{ max-width: 980px; margin: 0 auto; padding: 28px 18px 48px; }
+
+    .header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 10px 0 18px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{
+      width:44px; height:44px; border-radius:16px;
+      background: linear-gradient(135deg, #fdba74, #fda4af);
+      border:1px solid var(--border);
+      display:grid; place-items:center;
+      box-shadow: 0 10px 25px rgba(31,41,55,.08);
+    }
+    .logo span{ font-size:22px; }
+    h1{ font-size: 22px; margin:0; line-height:1.1; }
+    .p{ margin:2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .nav{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill:hover{ background:#fff; }
+
+    .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    @media (max-width: 860px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .sectionTitle{ margin:0 0 10px; font-size: 16px; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .row{ grid-template-columns: 1fr; } }
+
+    .label{ font-size: 12px; color: var(--muted); margin: 8px 0 6px; }
+    .select, .input{
+      width:100%;
+      border:1px solid var(--border);
+      background:#fff;
+      padding: 11px 12px;
+      border-radius: 12px;
+      outline:none;
+    }
+    .select:focus, .input:focus{
+      border-color: rgba(249,115,22,.5);
+      box-shadow: 0 0 0 4px rgba(249,115,22,.12);
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color:#fff;
+      padding: 12px 14px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(249,115,22,.25);
+      transition: transform .12s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); }
+    .btn.secondary{
+      background:#fff;
+      color: var(--text);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .mutedBox{
+      border: 1px dashed rgba(31,41,55,.18);
+      background: rgba(255,255,255,.6);
+      border-radius: 16px;
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.45;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.8);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .price{ font-size: 28px; margin: 8px 0 6px; }
+    .small{ font-size: 12px; color: var(--muted); line-height:1.45; }
+    .hr{ height:1px; background: rgba(31,41,55,.08); margin: 14px 0; }
+
+    .success{ display:flex; gap:12px; align-items:flex-start; }
+    .check{
+      width:40px; height:40px; border-radius: 14px;
+      background: rgba(34,197,94,.15);
+      border: 1px solid rgba(34,197,94,.25);
+      display:grid; place-items:center;
+      color: var(--ok);
+      font-weight: 900;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+
+    .ownerTop{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .tag{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size: 12px;
+      margin: 4px 6px 0 0;
+      white-space: nowrap;
+    }
+
+    table{ width:100%; border-collapse: separate; border-spacing: 0 10px; }
+    th{ font-size: 12px; color: var(--muted); font-weight: 600; text-align:left; padding: 0 4px; }
+    .tr{ background: rgba(255,255,255,.8); }
+    td{
+      padding: 10px 12px;
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      vertical-align: top;
+    }
+    td:first-child{
+      border-left:1px solid var(--border);
+      border-radius: 12px 0 0 12px;
+    }
+    td:last-child{
+      border-right:1px solid var(--border);
+      border-radius: 0 12px 12px 0;
+    }
+
+    /* pages */
+    .page{ display:none; }
+    .page.active{ display:block; }
+
+    /* cursor ice cream */
+    #cursorIce{
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s ease;
+      z-index: 9999;
+      filter: drop-shadow(0 10px 18px rgba(31,41,55,.18));
+    }
+    #cursorIce .bubble{
+      width: 34px; height: 34px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(31,41,55,.12);
+      display: grid;
+      place-items: center;
+      backdrop-filter: blur(10px);
+      transform: rotate(-10deg);
+    }
+    #cursorIce .bubble span{ font-size: 18px; }
+
+    /* tiny toast */
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.9);
+      box-shadow: var(--shadow);
+      display:none;
+      max-width: 320px;
+      font-size: 13px;
+      color: var(--text);
+      backdrop-filter: blur(10px);
+      z-index: 9998;
+    }
+    .toast.show{ display:block; }
+
+    /* avoid selection weird */
+    .noselect{ user-select:none; }
+  </style>
+</head>
+
+<body>
+  <!-- cursor ice cream -->
+  <div id="cursorIce" aria-hidden="true">
+    <div class="bubble"><span>🍦</span></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden><span>🍦</span></div>
+        <div>
+          <h1>Toko Eskrim Vanilla</h1>
+          <div class="p">Cone / Mangkok • Small / Medium / Large • Cash</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <div class="pill" data-nav="#shop">Beli</div>
+        <div class="pill" data-nav="#check">Cek Order ID</div>
+        <div class="pill" data-nav="#owner-login">Owner</div>
+      </div>
+    </div>
+
+    <!-- SHOP -->
+    <div class="page" id="page-shop">
+      <div class="grid">
+        <div class="card">
+          <h2 class="sectionTitle">Pesan Eskrim</h2>
+
+          <div class="badge">🍦 Rasa: <b>Vanilla</b></div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <div class="label">Wadah</div>
+              <select class="select" id="container">
+                <option value="Cone">Cone</option>
+                <option value="Mangkok">Mangkok</option>
+              </select>
+            </div>
+            <div>
+              <div class="label">Ukuran</div>
+              <select class="select" id="size">
+                <option value="Small">Small</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Large">Large</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <div class="label">Jumlah</div>
+              <input class="input" id="qty" type="number" min="1" value="1" />
+            </div>
+            <div>
+              <div class="label">Nama (opsional)</div>
+              <input class="input" id="buyerName" placeholder="Contoh: Alief" />
+            </div>
+          </div>
+
+          <div class="label">Pembayaran</div>
+          <div class="mutedBox">
+            <b>Cash</b> (bayar di tempat). Setelah pesan, kamu akan dapat <b>Order ID</b> untuk cek status.
+          </div>
+
+          <div class="hr"></div>
+
+          <button class="btn" id="btnOrder">Konfirmasi Pesanan • <span id="priceTop">Rp0</span></button>
+          <div class="small" style="margin-top:10px;">Tips: simpan Order ID kamu ya 😉</div>
+        </div>
+
+        <div class="card">
+          <h2 class="sectionTitle">Ringkasan</h2>
+          <div class="price" id="priceBig">Rp0</div>
+          <div class="small" id="summaryLine">Vanilla • Cone • Medium • Qty 1</div>
+
+          <div class="hr"></div>
+
+          <div class="mutedBox">
+            <b>Catatan no-DB:</b><br/>
+            Order disimpan di <b>localStorage</b>. Jadi dashboard owner cuma bisa lihat order yang dibuat di browser/perangkat ini.
+            <div class="hr"></div>
+            Kalau kamu nanti mau realtime lintas device, perlu storage ringan (contoh Vercel KV/Upstash/Sheets).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="page" id="page-success">
+      <div class="card">
+        <div class="success">
+          <div class="check">✓</div>
+          <div>
+            <h2 class="sectionTitle" style="margin-bottom:6px;">Terima kasih sudah membeli! 🎉</h2>
+            <div class="small">
+              Pesanan kamu berhasil dibuat. Pembayaran: <b>Cash</b>.
+            </div>
+
+            <div class="hr"></div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <span class="badge">Order ID: <span class="kbd" id="successOrderId">-</span></span>
+              <div class="pill" data-nav="#check" id="goCheckFromSuccess">Cek status</div>
+              <div class="pill" data-nav="#shop">Pesan lagi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECK ORDER -->
+    <div class="page" id="page-check">
+      <div class="grid">
+        <div class="card">
+          <h2 class="sectionTitle">Cek Order ID</h2>
+          <div class="label">Masukkan Order ID</div>
+          <input class="input" id="checkId" placeholder="Contoh: VLA-20260115-XXXXXX" />
+          <div style="height:10px;"></div>
+          <button class="btn" id="btnCheck">Cek Status</button>
+          <div class="small" id="checkMsg" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="sectionTitle">Hasil</h2>
+          <div class="mutedBox" id="checkResult">
+            Belum ada hasil. Masukkan Order ID lalu klik <b>Cek Status</b>.
+            <div class="hr"></div>
+            Tanpa database, cek order hanya bekerja untuk order yang pernah dibuat di browser/perangkat ini.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER LOGIN -->
+    <div class="page" id="page-owner-login">
+      <div class="grid">
+        <div class="card">
+          <h2 class="sectionTitle">Owner Login</h2>
+
+          <div class="mutedBox" style="margin-bottom:12px;">
+            Ini versi tanpa database (client-side).<br/>
+            Password default: <span class="kbd">owner123</span> (bisa kamu ganti di kode).
+          </div>
+
+          <div class="label">Password</div>
+          <input class="input" id="ownerPass" type="password" placeholder="Masukkan password owner" />
+          <div style="height:10px;"></div>
+          <button class="btn" id="btnOwnerLogin">Masuk Dashboard</button>
+          <div class="small" id="ownerErr" style="margin-top:12px;"></div>
+
+          <div class="hr"></div>
+          <button class="btn secondary" id="btnOwnerGoDash">Buka Dashboard (kalau sudah login)</button>
+        </div>
+
+        <div class="card">
+          <h2 class="sectionTitle">Info</h2>
+          <div class="mutedBox">
+            Kalau kamu pengen order pembeli otomatis “masuk” ke dashboard owner beneran (lintas device),
+            kamu butuh storage server. Tapi untuk demo/portfolio, versi 1 file ini sudah oke banget.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER DASHBOARD -->
+    <div class="page" id="page-owner-dash">
+      <div class="card">
+        <div class="ownerTop">
+          <div>
+            <h2 class="sectionTitle" style="margin:0;">Dashboard Owner</h2>
+            <div class="small">Lihat & konfirmasi order (mode lokal tanpa database)</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="pill" id="btnRefresh">Refresh</button>
+            <button class="pill" id="btnLogout">Logout</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <span class="small">Filter:</span>
+          <button class="pill" data-filter="ALL">Semua</button>
+          <button class="pill" data-filter="NEW">Baru</button>
+          <button class="pill" data-filter="CONFIRMED">Terkonfirmasi</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div id="dashEmpty" class="mutedBox" style="display:none;">
+          Belum ada order untuk ditampilkan.
+          <div class="hr"></div>
+          Coba buat order dari menu <span class="kbd">Beli</span>.
+        </div>
+
+        <div style="overflow:auto;">
+          <table id="dashTable" style="display:none; min-width:720px;">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Detail</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="dashBody"></tbody>
+          </table>
+        </div>
+
+        <div class="hr"></div>
+        <div class="small">
+          Tips: Karena ini localStorage, kalau kamu buka dashboard di browser lain/perangkat lain, list ordernya bisa kosong.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /***************
+     * Simple router (hash)
+     ***************/
+    const pages = {
+      "#shop": "page-shop",
+      "#success": "page-success",
+      "#check": "page-check",
+      "#owner-login": "page-owner-login",
+      "#owner-dash": "page-owner-dash"
+    };
+
+    function showPage(hash){
+      const h = pages[hash] ? hash : "#shop";
+      for (const key in pages){
+        document.getElementById(pages[key]).classList.remove("active");
+      }
+      document.getElementById(pages[h]).classList.add("active");
+      // refresh dashboard if open
+      if (h === "#owner-dash") renderDashboard();
+    }
+
+    document.addEventListener("click", (e) => {
+      const nav = e.target.closest("[data-nav]");
+      if (!nav) return;
+      const to = nav.getAttribute("data-nav");
+      window.location.hash = to;
+    });
+
+    window.addEventListener("hashchange", () => showPage(window.location.hash));
+    if (!window.location.hash) window.location.hash = "#shop";
+    showPage(window.location.hash);
+
+    /***************
+     * Cursor ice cream follow
+     ***************/
+    const cursorIce = document.getElementById("cursorIce");
+    const pos = { x: 0, y: 0 };
+    const target = { x: 0, y: 0 };
+    let raf = null;
+
+    window.addEventListener("mousemove", (e) => {
+      target.x = e.clientX + 10;
+      target.y = e.clientY + 10;
+      cursorIce.style.opacity = "1";
+    });
+    window.addEventListener("mouseleave", () => cursorIce.style.opacity = "0");
+
+    function tick(){
+      pos.x += (target.x - pos.x) * 0.18;
+      pos.y += (target.y - pos.y) * 0.18;
+      cursorIce.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+
+    /***************
+     * Storage helpers (localStorage)
+     ***************/
+    const ORDERS_KEY = "eskrim_orders_v1";
+    const OWNER_KEY = "eskrim_owner_authed_v1";
+
+    function safeParse(raw, fallback){
+      try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
+    }
+    function getOrders(){
+      return safeParse(localStorage.getItem(ORDERS_KEY), []);
+    }
+    function saveOrders(orders){
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    }
+    function addOrder(order){
+      const orders = getOrders();
+      orders.unshift(order);
+      saveOrders(orders);
+    }
+    function findOrder(id){
+      const needle = (id || "").trim().toLowerCase();
+      return getOrders().find(o => (o.id || "").toLowerCase() === needle);
+    }
+    function updateOrderStatus(id, status){
+      const orders = getOrders();
+      const needle = (id || "").trim().toLowerCase();
+      const idx = orders.findIndex(o => (o.id || "").toLowerCase() === needle);
+      if (idx >= 0){
+        orders[idx] = { ...orders[idx], status };
+        saveOrders(orders);
+      }
+    }
+    function isOwnerAuthed(){ return localStorage.getItem(OWNER_KEY) === "1"; }
+    function setOwnerAuthed(v){ localStorage.setItem(OWNER_KEY, v ? "1" : "0"); }
+
+    /***************
+     * Pricing
+     ***************/
+    function moneyIDR(n){
+      return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(n);
+    }
+    function calcPrice(size, container, qty){
+      const base = (size === "Small") ? 12000 : (size === "Medium") ? 17000 : 22000;
+      const containerAdd = (container === "Cone") ? 2000 : 1000;
+      const q = Math.max(1, Number(qty) || 1);
+      return (base + containerAdd) * q;
+    }
+    function makeOrderId(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      const rand = Math.random().toString(36).slice(2,8).toUpperCase();
+      return `VLA-${y}${m}${day}-${rand}`;
+    }
+
+    /***************
+     * UI: toast
+     ***************/
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+    }
+
+    /***************
+     * Shop interactions
+     ***************/
+    const elSize = document.getElementById("size");
+    const elContainer = document.getElementById("container");
+    const elQty = document.getElementById("qty");
+    const elBuyerName = document.getElementById("buyerName");
+    const elPriceTop = document.getElementById("priceTop");
+    const elPriceBig = document.getElementById("priceBig");
+    const elSummaryLine = document.getElementById("summaryLine");
+
+    function refreshSummary(){
+      const size = elSize.value;
+      const container = elContainer.value;
+      const qty = elQty.value;
+      const price = calcPrice(size, container, qty);
+      elPriceTop.textContent = moneyIDR(price);
+      elPriceBig.textContent = moneyIDR(price);
+      elSummaryLine.textContent = `Vanilla • ${container} • ${size} • Qty ${Math.max(1, Number(qty)||1)}`;
+    }
+
+    [elSize, elContainer, elQty].forEach(el => el.addEventListener("input", refreshSummary));
+    refreshSummary();
+
+    document.getElementById("btnOrder").addEventListener("click", () => {
+      const size = elSize.value;
+      const container = elContainer.value;
+      const qty = Math.max(1, Number(elQty.value) || 1);
+      const buyerName = (elBuyerName.value || "").trim();
+
+      const id = makeOrderId();
+      const order = {
+        id,
+        createdAtISO: new Date().toISOString(),
+        flavor: "Vanilla",
+        size,
+        container,
+        qty,
+        payment: "Cash",
+        status: "NEW",
+        buyerName: buyerName || undefined
+      };
+      addOrder(order);
+
+      document.getElementById("successOrderId").textContent = id;
+
+      // also prefill check page
+      document.getElementById("checkId").value = id;
+
+      toast("Order dibuat! Simpan Order ID ya.");
+      window.location.hash = "#success";
+    });
+
+    document.getElementById("goCheckFromSuccess").addEventListener("click", () => {
+      const id = document.getElementById("successOrderId").textContent || "";
+      document.getElementById("checkId").value = id;
+    });
+
+    /***************
+     * Check order
+     ***************/
+    const checkId = document.getElementById("checkId");
+    const checkMsg = document.getElementById("checkMsg");
+    const checkResult = document.getElementById("checkResult");
+
+    function renderOrderResult(order){
+      if (!order){
+        checkMsg.textContent = "Order tidak ditemukan di perangkat ini.";
+        checkResult.innerHTML = `
+          Order tidak ditemukan.<div class="hr"></div>
+          <div class="small">
+            Tanpa database, cek order cuma bisa untuk order yang pernah dibuat di browser/perangkat ini.
+          </div>`;
+        return;
+      }
+      checkMsg.textContent = "";
+      const statusText = order.status === "NEW" ? "Menunggu konfirmasi owner" : "Sudah dikonfirmasi ✅";
+      checkResult.innerHTML = `
+        <div style="color:var(--text); line-height:1.6;">
+          <div><b>ID:</b> ${order.id}</div>
+          <div><b>Status:</b> ${statusText}</div>
+          <div><b>Rasa:</b> ${order.flavor}</div>
+          <div><b>Wadah:</b> ${order.container}</div>
+          <div><b>Ukuran:</b> ${order.size}</div>
+          <div><b>Qty:</b> ${order.qty}</div>
+          <div><b>Bayar:</b> ${order.payment}</div>
+          ${order.buyerName ? `<div><b>Nama:</b> ${order.buyerName}</div>` : ""}
+        </div>`;
+    }
+
+    document.getElementById("btnCheck").addEventListener("click", () => {
+      const id = (checkId.value || "").trim();
+      if (!id) return toast("Masukkan Order ID dulu.");
+      renderOrderResult(findOrder(id));
+    });
+
+    /***************
+     * Owner login + dashboard
+     ***************/
+    const OWNER_PASSWORD = "owner123"; // ganti ini aja kalau mau
+
+    document.getElementById("btnOwnerLogin").addEventListener("click", () => {
+      const pass = document.getElementById("ownerPass").value || "";
+      const ownerErr = document.getElementById("ownerErr");
+      if (pass === OWNER_PASSWORD){
+        setOwnerAuthed(true);
+        ownerErr.textContent = "";
+        toast("Login owner berhasil.");
+        window.location.hash = "#owner-dash";
+      } else {
+        ownerErr.textContent = "Password salah.";
+      }
+    });
+
+    document.getElementById("btnOwnerGoDash").addEventListener("click", () => {
+      if (!isOwnerAuthed()){
+        toast("Kamu belum login owner.");
+        return;
+      }
+      window.location.hash = "#owner-dash";
+    });
+
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      setOwnerAuthed(false);
+      toast("Logout berhasil.");
+      window.location.hash = "#owner-login";
+    });
+
+    document.getElementById("btnRefresh").addEventListener("click", () => {
+      renderDashboard();
+      toast("Dashboard di-refresh.");
+    });
+
+    let dashFilter = "ALL";
+    document.querySelectorAll("[data-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        dashFilter = btn.getAttribute("data-filter");
+        renderDashboard();
+      });
+    });
+
+    function renderDashboard(){
+      if (window.location.hash !== "#owner-dash") return;
+
+      if (!isOwnerAuthed()){
+        toast("Silakan login owner dulu.");
+        window.location.hash = "#owner-login";
+        return;
+      }
+
+      const orders = getOrders();
+      const filtered = orders.filter(o => dashFilter === "ALL" ? true : o.status === dashFilter);
+
+      const dashEmpty = document.getElementById("dashEmpty");
+      const dashTable = document.getElementById("dashTable");
+      const dashBody = document.getElementById("dashBody");
+
+      dashBody.innerHTML = "";
+
+      if (!filtered.length){
+        dashEmpty.style.display = "block";
+        dashTable.style.display = "none";
+        return;
+      }
+
+      dashEmpty.style.display = "none";
+      dashTable.style.display = "table";
+
+      filtered.forEach(o => {
+        const tr = document.createElement("tr");
+        tr.className = "tr";
+
+        const created = new Date(o.createdAtISO).toLocaleString("id-ID");
+        const statusTag = (o.status === "NEW") ? `<span class="tag">NEW</span>` : `<span class="tag">CONFIRMED ✅</span>`;
+        const buyer = o.buyerName ? `<div class="small">Nama: ${o.buyerName}</div>` : "";
+
+        tr.innerHTML = `
+          <td>
+            <div style="font-weight:800;">${o.id}</div>
+            <div class="small">${created}</div>
+            ${buyer}
+          </td>
+          <td>
+            <span class="tag">🍦 ${o.flavor}</span>
+            <span class="tag">${o.container}</span>
+            <span class="tag">${o.size}</span>
+            <span class="tag">Qty ${o.qty}</span>
+            <span class="tag">Cash</span>
+          </td>
+          <td>${statusTag}</td>
+          <td>
+            ${o.status === "NEW"
+              ? `<button class="pill" data-confirm="${o.id}">Konfirmasi</button>`
+              : `<span class="small">—</span>`}
+          </td>
+        `;
+        dashBody.appendChild(tr);
+      });
+
+      dashBody.querySelectorAll("[data-confirm]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-confirm");
+          updateOrderStatus(id, "CONFIRMED");
+          toast("Order dikonfirmasi ✅");
+          renderDashboard();
+        });
+      });
+    }
+
+    // initial dashboard state if opened
+    if (window.location.hash === "#owner-dash") renderDashboard();
+  </script>
+</body>
+</html>
