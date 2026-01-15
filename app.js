@@ -21,8 +21,7 @@ function showPage(hash) {
 document.addEventListener("click", (e) => {
   const nav = e.target.closest("[data-nav]");
   if (!nav) return;
-  const to = nav.getAttribute("data-nav");
-  window.location.hash = to;
+  window.location.hash = nav.getAttribute("data-nav");
 });
 
 window.addEventListener("hashchange", () => showPage(window.location.hash));
@@ -66,6 +65,57 @@ function toast(msg) {
 }
 
 /*******************
+ * Audio (MP3 local)
+ *******************/
+const vibesAudio = document.getElementById("vibesAudio");
+
+async function playVibes() {
+  try {
+    vibesAudio.volume = 0.85;
+    await vibesAudio.play(); // will work after user gesture
+  } catch {
+    // autoplay might be blocked if no gesture
+  }
+}
+
+/*******************
+ * Overlay controls
+ *******************/
+const overlay = document.getElementById("audioOverlay");
+const btnStartAudio = document.getElementById("btnStartAudio");
+const btnNoAudio = document.getElementById("btnNoAudio");
+
+function closeOverlay() {
+  overlay.classList.add("hidden");
+}
+
+// Optional: overlay only once per browser
+const SEEN_KEY = "alief_audio_overlay_seen_v1";
+if (localStorage.getItem(SEEN_KEY) === "1") {
+  overlay.classList.add("hidden");
+} else {
+  localStorage.setItem(SEEN_KEY, "1");
+}
+
+btnStartAudio.addEventListener("click", async () => {
+  closeOverlay();
+  toast("Vibes ON 🔊");
+  await playVibes();
+});
+
+btnNoAudio.addEventListener("click", () => {
+  closeOverlay();
+  toast("Oke, lanjut tanpa suara.");
+});
+
+// Bonus: kalau user klik mana saja setelah overlay hilang, coba play lagi (buat jaga-jaga)
+document.addEventListener("click", () => {
+  if (overlay.classList.contains("hidden") && vibesAudio.paused) {
+    playVibes();
+  }
+}, { once: true });
+
+/*******************
  * Data (flavors)
  *******************/
 const FLAVORS = [
@@ -81,9 +131,7 @@ function moneyIDR(n) {
 }
 
 function calcPrice(size, container, qty) {
-  // base by size
   const base = size === "Small" ? 12000 : size === "Medium" ? 17000 : 22000;
-  // container add
   const add = container === "Cone" ? 2000 : 1000;
   const q = Math.max(1, Number(qty) || 1);
   return (base + add) * q;
@@ -149,7 +197,6 @@ function renderFlavorCards() {
       <div class="flavorNote">${f.note}</div>
     `;
     div.addEventListener("click", () => {
-      // set selected flavor & go to order page
       document.getElementById("flavor").value = f.key;
       refreshSummary();
       window.location.hash = "#order";
@@ -387,84 +434,4 @@ function renderDashboard() {
       renderDashboard();
     });
   });
-}
-
-/*******************
- * YouTube audio (Iframe API)
- * Source: https://youtu.be/xBQx26V677A?...
- *******************/
-let ytPlayer = null;
-let ytReady = false;
-
-function loadYouTubeAPI() {
-  return new Promise((resolve) => {
-    if (window.YT && window.YT.Player) return resolve();
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-    window.onYouTubeIframeAPIReady = () => resolve();
-  });
-}
-
-async function initYouTubePlayer() {
-  if (ytReady) return;
-  await loadYouTubeAPI();
-
-  ytPlayer = new YT.Player("ytPlayer", {
-    height: "1",
-    width: "1",
-    videoId: "xBQx26V677A",
-    playerVars: {
-      autoplay: 0,
-      controls: 0,
-      disablekb: 1,
-      fs: 0,
-      modestbranding: 1,
-      rel: 0,
-      playsinline: 1
-    },
-    events: {
-      onReady: () => { ytReady = true; }
-    }
-  });
-}
-
-async function playVibes() {
-  await initYouTubePlayer();
-  try {
-    ytPlayer.unMute?.();
-    ytPlayer.setVolume?.(80);
-    ytPlayer.playVideo?.();
-  } catch {}
-}
-
-/*******************
- * Overlay controls
- *******************/
-const overlay = document.getElementById("audioOverlay");
-const btnStartAudio = document.getElementById("btnStartAudio");
-const btnNoAudio = document.getElementById("btnNoAudio");
-
-function closeOverlay() {
-  overlay.classList.add("hidden");
-}
-
-btnStartAudio.addEventListener("click", async () => {
-  closeOverlay();
-  toast("Vibes ON 🔊");
-  // must be after user gesture
-  await playVibes();
-});
-
-btnNoAudio.addEventListener("click", () => {
-  closeOverlay();
-  toast("Oke, lanjut tanpa suara.");
-});
-
-// Optional: overlay only once per browser
-const SEEN_KEY = "alief_audio_overlay_seen_v1";
-if (localStorage.getItem(SEEN_KEY) === "1") {
-  overlay.classList.add("hidden");
-} else {
-  localStorage.setItem(SEEN_KEY, "1");
 }
